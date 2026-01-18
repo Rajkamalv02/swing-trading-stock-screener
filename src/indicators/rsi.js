@@ -66,8 +66,21 @@ function calculateRSI(prices, period = 14, returnArray = false) {
   const rsiValues = [];
 
   // Calculate RSI for first period
-  let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-  let rsi = 100 - (100 / (1 + rs));
+//   let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+//   let rsi = 100 - (100 / (1 + rs));
+let rsi;
+
+if (avgGain === 0 && avgLoss === 0) {
+  rsi = 50;
+} else if (avgLoss === 0) {
+  rsi = 100;
+} else if (avgGain === 0) {
+  rsi = 0;
+} else {
+  const rs = avgGain / avgLoss;
+  rsi = 100 - (100 / (1 + rs));
+}
+
   rsiValues.push(rsi);
 
   // Calculate RSI for remaining periods using EMA smoothing
@@ -77,8 +90,21 @@ function calculateRSI(prices, period = 14, returnArray = false) {
     avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
 
     // Calculate RS and RSI
-    rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-    rsi = 100 - (100 / (1 + rs));
+    // rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+    // rsi = 100 - (100 / (1 + rs));
+    let rsi;
+
+if (avgGain === 0 && avgLoss === 0) {
+  rsi = 50;
+} else if (avgLoss === 0) {
+  rsi = 100;
+} else if (avgGain === 0) {
+  rsi = 0;
+} else {
+  const rs = avgGain / avgLoss;
+  rsi = 100 - (100 / (1 + rs));
+}
+
     
     rsiValues.push(rsi);
   }
