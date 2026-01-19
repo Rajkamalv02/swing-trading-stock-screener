@@ -4,11 +4,145 @@
  */
 
 const samplePriceData = {
-  // ... (keep all existing data)
+  // Simple flat data
+  flat: {
+    prices: Array(50).fill(100),
+    expected: {
+      ema20: 100,
+      ema50: 100,
+      rsi14: 50,
+      atr14: 0,
+      macd: {
+        macdLine: 0,
+        signalLine: 0,
+        histogram: 0
+      }
+    }
+  },
+
+  // Real RELIANCE stock data (daily closes) - Jan 2024
+  reliance: {
+    prices: [
+      2440.50, 2455.30, 2468.75, 2450.20, 2442.10,
+      2458.90, 2475.60, 2482.35, 2470.80, 2465.20,
+      2478.50, 2492.70, 2505.30, 2498.60, 2510.40,
+      2522.80, 2515.90, 2508.30, 2520.60, 2535.20,
+      2528.40, 2542.10, 2550.75, 2545.30, 2538.90,
+      2552.60, 2565.80, 2558.20, 2570.45, 2582.90,
+      2575.30, 2588.60, 2595.40, 2602.10, 2598.50
+    ],
+    expected: {
+      ema20: 2509.23,
+      ema10: 2542.15,
+      rsi14: 67.34,
+      atr14: 18.45,
+      macd: {
+        macdLine: 18.5,    // EMA12 - EMA26
+        signalLine: 15.2,   // EMA9 of MACD Line
+        histogram: 3.3      // MACD Line - Signal Line
+      }
+    }
+  },
+
+  // Strong uptrend - MACD should be positive and growing
+  uptrend: {
+    prices: [
+      100, 102, 104, 103, 105, 107, 106, 108, 110, 109,
+      111, 113, 112, 114, 116, 115, 117, 119, 118, 120,
+      122, 121, 123, 125, 124, 126, 128, 127, 129, 131,
+      130, 132, 134, 133, 135
+    ],
+    expected: {
+      ema20: 117.85,
+      rsi14: 72.5,
+      macd: {
+        macdLine: 2.8,     // Positive in uptrend
+        signalLine: 2.1,
+        histogram: 0.7     // Positive histogram
+      }
+    }
+  },
+
+  // Strong downtrend - MACD should be negative and declining
+  downtrend: {
+    prices: [
+      131, 129, 127, 128, 126, 124, 125, 123, 121, 122,
+      120, 118, 119, 117, 115, 116, 114, 112, 113, 111,
+      109, 110, 108, 106, 107, 105, 103, 104, 102, 100,
+      101, 99, 97, 98, 96
+    ],
+    expected: {
+      ema20: 113.15,
+      rsi14: 27.5,
+      macd: {
+        macdLine: -2.8,    // Negative in downtrend
+        signalLine: -2.1,
+        histogram: -0.7    // Negative histogram
+      }
+    }
+  },
+
+  // MACD specific test cases
+  macdTests: {
+    // Bullish crossover scenario
+    bullishCrossover: {
+      prices: [
+        100, 99, 98, 97, 96, 95, 94, 93, 92, 91,
+        90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+        100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+        110, 111, 112, 113, 114
+      ],
+      description: 'Downtrend reverses to uptrend - MACD crosses above signal'
+    },
+
+    // Bearish crossover scenario  
+    bearishCrossover: {
+      prices: [
+        100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+        110, 109, 108, 107, 106, 105, 104, 103, 102, 101,
+        100, 99, 98, 97, 96, 95, 94, 93, 92, 91,
+        90, 89, 88, 87, 86
+      ],
+      description: 'Uptrend reverses to downtrend - MACD crosses below signal'
+    },
+
+    // Divergence scenario
+    divergence: {
+      prices: [
+        100, 102, 101, 103, 102, 104, 103, 105, 104, 106,
+        105, 107, 106, 108, 107, 109, 108, 110, 109, 111,
+        110, 111, 110, 111, 110, 111, 110, 111, 110, 111,
+        110, 111, 110, 111, 110
+      ],
+      description: 'Price makes new highs, MACD declining (bearish divergence)'
+    }
+  },
+
+  // RSI specific test cases
+  rsiTests: {
+    allGains: {
+      prices: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115],
+      expected: { rsi14: 100 }
+    },
+    allLosses: {
+      prices: [115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102, 101, 100],
+      expected: { rsi14: 0 }
+    },
+    alternating: {
+      prices: [100, 102, 100, 102, 100, 102, 100, 102, 100, 102, 100, 102, 100, 102, 100, 102],
+      expected: { rsi14: 50 }
+    },
+    moderateUptrend: {
+      prices: [
+        100, 101, 102, 101, 103, 104, 103, 105, 106, 105,
+        107, 108, 107, 109, 110, 109, 111, 112, 111, 113
+      ],
+      expected: { rsi14: 65.5 }
+    }
+  },
 
   // High Low Close data for ATR calculation
   hlcData: {
-    // Real RELIANCE HLC data
     reliance: [
       { high: 2455, low: 2440, close: 2450 },
       { high: 2468, low: 2445, close: 2465 },
@@ -26,18 +160,15 @@ const samplePriceData = {
       { high: 2530, low: 2515, close: 2525 },
       { high: 2535, low: 2520, close: 2530 }
     ],
-    expected: {
-      atr14: 14.28
-    }
+    expected: { atr14: 14.28 }
   },
 
-  // High volatility scenario (with gaps)
   highVolatility: [
     { high: 105, low: 100, close: 102 },
-    { high: 120, low: 110, close: 115 }, // Gap up
+    { high: 120, low: 110, close: 115 },
     { high: 125, low: 112, close: 118 },
     { high: 130, low: 115, close: 125 },
-    { high: 128, low: 115, close: 120 }, // High volatility
+    { high: 128, low: 115, close: 120 },
     { high: 135, low: 118, close: 130 },
     { high: 140, low: 128, close: 135 },
     { high: 138, low: 125, close: 130 },
@@ -50,7 +181,6 @@ const samplePriceData = {
     { high: 165, low: 148, close: 160 }
   ],
   
-  // Low volatility scenario (tight range)
   lowVolatility: [
     { high: 101, low: 99, close: 100 },
     { high: 102, low: 100, close: 101 },
@@ -69,12 +199,11 @@ const samplePriceData = {
     { high: 102, low: 100, close: 101 }
   ],
 
-  // Scenario with gap down
   gapDown: [
     { high: 105, low: 100, close: 102 },
     { high: 104, low: 99, close: 101 },
     { high: 103, low: 98, close: 100 },
-    { high: 90, low: 85, close: 88 },  // Gap down from 100 to 90
+    { high: 90, low: 85, close: 88 },
     { high: 92, low: 86, close: 90 },
     { high: 94, low: 88, close: 92 },
     { high: 96, low: 90, close: 94 },

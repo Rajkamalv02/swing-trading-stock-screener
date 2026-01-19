@@ -12,6 +12,12 @@ const {
   calculateATRPositionSize,
   interpretATR 
 } = require('./atr');
+const {
+  calculateMACD,
+  interpretMACD,
+  detectMACDDivergence,
+  getMACDMomentum
+} = require('./macd');
 
 module.exports = {
   // Moving Averages
@@ -23,6 +29,11 @@ module.exports = {
   interpretRSI,
   checkRSIDivergence,
   
+  calculateMACD,
+  interpretMACD,
+  detectMACDDivergence,
+  getMACDMomentum,
+  
   // Volatility Indicators
   calculateATR,
   calculateTrueRange,
@@ -30,10 +41,12 @@ module.exports = {
   calculateATRPositionSize,
   interpretATR,
   
-  // More indicators will be added here
-  // calculateMACD,
-  // calculateADX,
+  // More indicators to be added:
   // calculateBollingerBands,
+  // calculateADX,
   // calculateStochastic,
-  // etc.
+  // calculateParabolicSAR,
+  // calculateIchimoku,
+  // calculateOBV,
+  // calculateFibonacci
 };
