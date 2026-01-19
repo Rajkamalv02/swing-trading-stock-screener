@@ -231,4 +231,3 @@ console.log('══════════════════════�
 console.log('✓ Compare all values with TradingView');
 console.log('✓ Indicators: EMA, RSI, MACD, ATR complete');
 console.log('═══════════════════════════════════════\n');
-```
