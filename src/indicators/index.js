@@ -5,6 +5,19 @@
 
 const { calculateEMA, calculateSMA } = require('./ema');
 const { calculateRSI, interpretRSI, checkRSIDivergence } = require('./rsi');
+const { 
+  calculateATR, 
+  calculateTrueRange,
+  calculateATRStopLoss,
+  calculateATRPositionSize,
+  interpretATR 
+} = require('./atr');
+const {
+  calculateMACD,
+  interpretMACD,
+  detectMACDDivergence,
+  getMACDMomentum
+} = require('./macd');
 
 module.exports = {
   // Moving Averages
@@ -16,9 +29,24 @@ module.exports = {
   interpretRSI,
   checkRSIDivergence,
   
-  // More indicators will be added here
-  // calculateMACD,
-  // calculateATR,
+  calculateMACD,
+  interpretMACD,
+  detectMACDDivergence,
+  getMACDMomentum,
+  
+  // Volatility Indicators
+  calculateATR,
+  calculateTrueRange,
+  calculateATRStopLoss,
+  calculateATRPositionSize,
+  interpretATR,
+  
+  // More indicators to be added:
+  // calculateBollingerBands,
   // calculateADX,
-  // etc.
+  // calculateStochastic,
+  // calculateParabolicSAR,
+  // calculateIchimoku,
+  // calculateOBV,
+  // calculateFibonacci
 };
