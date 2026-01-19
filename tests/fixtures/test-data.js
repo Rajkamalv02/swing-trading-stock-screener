@@ -16,11 +16,17 @@ const samplePriceData = {
         macdLine: 0,
         signalLine: 0,
         histogram: 0
+      },
+      bollingerBands: {
+        upper: 100,
+        middle: 100,
+        lower: 100,
+        bandwidth: 0
       }
     }
   },
 
-  // Real RELIANCE stock data (daily closes) - Jan 2024
+  // Real RELIANCE stock data (daily closes)
   reliance: {
     prices: [
       2440.50, 2455.30, 2468.75, 2450.20, 2442.10,
@@ -37,14 +43,20 @@ const samplePriceData = {
       rsi14: 67.34,
       atr14: 18.45,
       macd: {
-        macdLine: 18.5,    // EMA12 - EMA26
-        signalLine: 15.2,   // EMA9 of MACD Line
-        histogram: 3.3      // MACD Line - Signal Line
+        macdLine: 18.5,
+        signalLine: 15.2,
+        histogram: 3.3
+      },
+      bollingerBands: {
+        upper: 2570.5,
+        middle: 2535.2,
+        lower: 2499.9,
+        bandwidth: 0.028  // (upper - lower) / middle
       }
     }
   },
 
-  // Strong uptrend - MACD should be positive and growing
+  // Strong uptrend
   uptrend: {
     prices: [
       100, 102, 104, 103, 105, 107, 106, 108, 110, 109,
@@ -56,14 +68,19 @@ const samplePriceData = {
       ema20: 117.85,
       rsi14: 72.5,
       macd: {
-        macdLine: 2.8,     // Positive in uptrend
+        macdLine: 2.8,
         signalLine: 2.1,
-        histogram: 0.7     // Positive histogram
+        histogram: 0.7
+      },
+      bollingerBands: {
+        upper: 125.5,
+        middle: 120.0,
+        lower: 114.5
       }
     }
   },
 
-  // Strong downtrend - MACD should be negative and declining
+  // Strong downtrend
   downtrend: {
     prices: [
       131, 129, 127, 128, 126, 124, 125, 123, 121, 122,
@@ -75,16 +92,48 @@ const samplePriceData = {
       ema20: 113.15,
       rsi14: 27.5,
       macd: {
-        macdLine: -2.8,    // Negative in downtrend
+        macdLine: -2.8,
         signalLine: -2.1,
-        histogram: -0.7    // Negative histogram
+        histogram: -0.7
       }
+    }
+  },
+
+  // Bollinger Bands specific test cases
+  bollingerTests: {
+    // High volatility - wide bands
+    highVolatility: {
+      prices: [
+        100, 110, 95, 115, 90, 120, 85, 125, 80, 130,
+        75, 135, 70, 140, 65, 145, 60, 150, 55, 155,
+        100, 105, 95, 110, 90, 115, 85, 120, 80, 125
+      ],
+      description: 'Highly volatile - bands should be very wide'
+    },
+
+    // Low volatility - narrow bands (squeeze)
+    squeeze: {
+      prices: [
+        100, 101, 100, 101, 100, 101, 100, 101, 100, 101,
+        100, 101, 100, 101, 100, 101, 100, 101, 100, 101,
+        100, 101, 100, 101, 100, 101, 100, 101, 100, 101
+      ],
+      description: 'Low volatility squeeze - very narrow bands'
+    },
+
+    // Band walk (strong trend)
+    bandWalk: {
+      prices: [
+        100, 102, 104, 106, 108, 110, 112, 114, 116, 118,
+        120, 122, 124, 126, 128, 130, 132, 134, 136, 138,
+        140, 142, 144, 146, 148, 150, 152, 154, 156, 158
+      ],
+      description: 'Strong uptrend - price walking upper band'
     }
   },
 
   // MACD specific test cases
   macdTests: {
-    // Bullish crossover scenario
     bullishCrossover: {
       prices: [
         100, 99, 98, 97, 96, 95, 94, 93, 92, 91,
@@ -95,7 +144,6 @@ const samplePriceData = {
       description: 'Downtrend reverses to uptrend - MACD crosses above signal'
     },
 
-    // Bearish crossover scenario  
     bearishCrossover: {
       prices: [
         100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
@@ -106,7 +154,6 @@ const samplePriceData = {
       description: 'Uptrend reverses to downtrend - MACD crosses below signal'
     },
 
-    // Divergence scenario
     divergence: {
       prices: [
         100, 102, 101, 103, 102, 104, 103, 105, 104, 106,
