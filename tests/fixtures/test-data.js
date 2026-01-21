@@ -22,7 +22,8 @@ const samplePriceData = {
         middle: 100,
         lower: 100,
         bandwidth: 0
-      }
+      },
+      adx14: 0  // No trend = 0 ADX
     }
   },
 
@@ -51,8 +52,9 @@ const samplePriceData = {
         upper: 2570.5,
         middle: 2535.2,
         lower: 2499.9,
-        bandwidth: 0.028  // (upper - lower) / middle
-      }
+        bandwidth: 0.028
+      },
+      adx14: 28.5  // Moderate trend strength
     }
   },
 
@@ -76,7 +78,8 @@ const samplePriceData = {
         upper: 125.5,
         middle: 120.0,
         lower: 114.5
-      }
+      },
+      adx14: 35.0  // Strong uptrend
     }
   },
 
@@ -95,13 +98,47 @@ const samplePriceData = {
         macdLine: -2.8,
         signalLine: -2.1,
         histogram: -0.7
-      }
+      },
+      adx14: 35.0  // Strong downtrend
+    }
+  },
+
+  // ADX specific test cases
+  adxTests: {
+    // Very strong trend
+    veryStrongTrend: {
+      prices: [
+        100, 103, 106, 109, 112, 115, 118, 121, 124, 127,
+        130, 133, 136, 139, 142, 145, 148, 151, 154, 157,
+        160, 163, 166, 169, 172, 175, 178, 181, 184, 187,
+        190, 193, 196, 199, 202
+      ],
+      description: 'Very strong uptrend - ADX should be >50'
+    },
+
+    // Weak/no trend (sideways)
+    sideways: {
+      prices: [
+        100, 101, 99, 102, 98, 103, 97, 104, 96, 105,
+        95, 106, 94, 107, 93, 108, 92, 109, 91, 110,
+        100, 101, 99, 102, 98, 103, 97, 104, 96, 105
+      ],
+      description: 'Sideways market - ADX should be <20'
+    },
+
+    // Trend developing
+    developingTrend: {
+      prices: [
+        100, 100, 100, 100, 100, 101, 102, 103, 104, 105,
+        106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
+        116, 117, 118, 119, 120, 121, 122, 123, 124, 125
+      ],
+      description: 'Trend starting to develop - ADX should be 20-30'
     }
   },
 
   // Bollinger Bands specific test cases
   bollingerTests: {
-    // High volatility - wide bands
     highVolatility: {
       prices: [
         100, 110, 95, 115, 90, 120, 85, 125, 80, 130,
@@ -111,7 +148,6 @@ const samplePriceData = {
       description: 'Highly volatile - bands should be very wide'
     },
 
-    // Low volatility - narrow bands (squeeze)
     squeeze: {
       prices: [
         100, 101, 100, 101, 100, 101, 100, 101, 100, 101,
@@ -121,7 +157,6 @@ const samplePriceData = {
       description: 'Low volatility squeeze - very narrow bands'
     },
 
-    // Band walk (strong trend)
     bandWalk: {
       prices: [
         100, 102, 104, 106, 108, 110, 112, 114, 116, 118,
@@ -141,7 +176,7 @@ const samplePriceData = {
         100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
         110, 111, 112, 113, 114
       ],
-      description: 'Downtrend reverses to uptrend - MACD crosses above signal'
+      description: 'Downtrend reverses to uptrend'
     },
 
     bearishCrossover: {
@@ -151,7 +186,7 @@ const samplePriceData = {
         100, 99, 98, 97, 96, 95, 94, 93, 92, 91,
         90, 89, 88, 87, 86
       ],
-      description: 'Uptrend reverses to downtrend - MACD crosses below signal'
+      description: 'Uptrend reverses to downtrend'
     },
 
     divergence: {
@@ -161,7 +196,7 @@ const samplePriceData = {
         110, 111, 110, 111, 110, 111, 110, 111, 110, 111,
         110, 111, 110, 111, 110
       ],
-      description: 'Price makes new highs, MACD declining (bearish divergence)'
+      description: 'Price makes new highs, MACD declining'
     }
   },
 
@@ -188,7 +223,7 @@ const samplePriceData = {
     }
   },
 
-  // High Low Close data for ATR calculation
+  // High Low Close data for ATR and ADX calculation
   hlcData: {
     reliance: [
       { high: 2455, low: 2440, close: 2450 },
@@ -205,10 +240,91 @@ const samplePriceData = {
       { high: 2520, low: 2505, close: 2515 },
       { high: 2525, low: 2510, close: 2520 },
       { high: 2530, low: 2515, close: 2525 },
-      { high: 2535, low: 2520, close: 2530 }
+      { high: 2535, low: 2520, close: 2530 },
+      { high: 2540, low: 2525, close: 2535 },
+      { high: 2545, low: 2530, close: 2540 },
+      { high: 2550, low: 2535, close: 2545 },
+      { high: 2555, low: 2540, close: 2550 },
+      { high: 2560, low: 2545, close: 2555 },
+      { high: 2565, low: 2550, close: 2560 },
+      { high: 2570, low: 2555, close: 2565 },
+      { high: 2575, low: 2560, close: 2570 },
+      { high: 2580, low: 2565, close: 2575 },
+      { high: 2585, low: 2570, close: 2580 },
+      { high: 2590, low: 2575, close: 2585 },
+      { high: 2595, low: 2580, close: 2590 },
+      { high: 2600, low: 2585, close: 2595 },
+      { high: 2605, low: 2590, close: 2600 }
     ],
-    expected: { atr14: 14.28 }
+    expected: { 
+      atr14: 14.28,
+      adx14: 42.5
+    }
   },
+
+  // Strong uptrend HLC data
+  strongUptrend: [
+    { high: 102, low: 100, close: 101 },
+    { high: 104, low: 102, close: 103 },
+    { high: 106, low: 104, close: 105 },
+    { high: 108, low: 106, close: 107 },
+    { high: 110, low: 108, close: 109 },
+    { high: 112, low: 110, close: 111 },
+    { high: 114, low: 112, close: 113 },
+    { high: 116, low: 114, close: 115 },
+    { high: 118, low: 116, close: 117 },
+    { high: 120, low: 118, close: 119 },
+    { high: 122, low: 120, close: 121 },
+    { high: 124, low: 122, close: 123 },
+    { high: 126, low: 124, close: 125 },
+    { high: 128, low: 126, close: 127 },
+    { high: 130, low: 128, close: 129 },
+    { high: 132, low: 130, close: 131 },
+    { high: 134, low: 132, close: 133 },
+    { high: 136, low: 134, close: 135 },
+    { high: 138, low: 136, close: 137 },
+    { high: 140, low: 138, close: 139 },
+    { high: 142, low: 140, close: 141 },
+    { high: 144, low: 142, close: 143 },
+    { high: 146, low: 144, close: 145 },
+    { high: 148, low: 146, close: 147 },
+    { high: 150, low: 148, close: 149 },
+    { high: 152, low: 150, close: 151 },
+    { high: 154, low: 152, close: 153 },
+    { high: 156, low: 154, close: 155 }
+  ],
+
+  // Sideways/ranging HLC data
+  sidewaysMarket: [
+    { high: 102, low: 98, close: 100 },
+    { high: 103, low: 99, close: 101 },
+    { high: 101, low: 97, close: 99 },
+    { high: 104, low: 100, close: 102 },
+    { high: 100, low: 96, close: 98 },
+    { high: 105, low: 101, close: 103 },
+    { high: 99, low: 95, close: 97 },
+    { high: 106, low: 102, close: 104 },
+    { high: 98, low: 94, close: 96 },
+    { high: 107, low: 103, close: 105 },
+    { high: 101, low: 97, close: 99 },
+    { high: 103, low: 99, close: 101 },
+    { high: 100, low: 96, close: 98 },
+    { high: 104, low: 100, close: 102 },
+    { high: 99, low: 95, close: 97 },
+    { high: 105, low: 101, close: 103 },
+    { high: 98, low: 94, close: 96 },
+    { high: 106, low: 102, close: 104 },
+    { high: 100, low: 96, close: 98 },
+    { high: 103, low: 99, close: 101 },
+    { high: 101, low: 97, close: 99 },
+    { high: 104, low: 100, close: 102 },
+    { high: 100, low: 96, close: 98 },
+    { high: 105, low: 101, close: 103 },
+    { high: 99, low: 95, close: 97 },
+    { high: 102, low: 98, close: 100 },
+    { high: 101, low: 97, close: 99 },
+    { high: 103, low: 99, close: 101 }
+  ],
 
   highVolatility: [
     { high: 105, low: 100, close: 102 },
