@@ -10,7 +10,9 @@
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "demo": "node demo/run-scan.js",
+    "demo:quick": "node -e \"require('./src/scanner').quickScan().then(r => console.log(JSON.stringify(r, null, 2)))\""
   },
   "keywords": [
     "trading",
