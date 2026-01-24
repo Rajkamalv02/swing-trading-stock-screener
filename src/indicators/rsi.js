@@ -17,6 +17,9 @@
  * over the specified period (typically 14).
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 /**
  * Calculate Relative Strength Index
  * 
@@ -30,24 +33,36 @@
  * const rsi = calculateRSI(prices, 14); // Returns: ~68.5
  */
 function calculateRSI(prices, period = 14, returnArray = false) {
+  const startTime = Date.now();
+  
   // Input validation
   if (!Array.isArray(prices)) {
-    throw new Error('Prices must be an array');
+    const error = new Error('Prices must be an array');
+    logger.error('RSI calculation validation failed', error);
+    throw error;
   }
 
   if (period <= 0 || !Number.isInteger(period)) {
-    throw new Error('Invalid period: must be a positive integer');
+    const error = new Error('Invalid period: must be a positive integer');
+    logger.error('RSI calculation validation failed', error);
+    throw error;
   }
 
   // Need at least period + 1 prices to calculate RSI
   if (prices.length < period + 1) {
-    throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${prices.length}`);
+    const error = new Error(`Insufficient data: need at least ${period + 1} prices, got ${prices.length}`);
+    logger.error('RSI calculation validation failed', error);
+    throw error;
   }
 
   // Validate all prices are numbers
   if (!prices.every(price => typeof price === 'number' && !isNaN(price))) {
-    throw new Error('All prices must be numbers');
+    const error = new Error('All prices must be numbers');
+    logger.error('RSI calculation validation failed', error);
+    throw error;
   }
+
+  logger.debug('Calculating RSI', { period, dataPoints: prices.length });
 
   // Calculate price changes (gains and losses)
   const changes = [];

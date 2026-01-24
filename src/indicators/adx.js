@@ -1,3 +1,6 @@
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 const { calculateATR } = require('./atr');
 
 /**
@@ -17,13 +20,21 @@ const { calculateATR } = require('./atr');
  * const adx = calculateADX(data, 14); // Returns: { adx: 28.5, plusDI: 32.1, minusDI: 18.3 }
  */
 function calculateADX(data, period = 14, returnArray = false) {
+  const startTime = Date.now();
+  
+  logger.debug('Calculating ADX', { period, dataPoints: data ? data.length : 0 });
+  
   // Input validation
   if (!Array.isArray(data)) {
-    throw new Error('Data must be an array');
+    const error = new Error('Data must be an array');
+    logger.error('ADX calculation validation failed', error);
+    throw error;
   }
 
   if (period <= 0 || !Number.isInteger(period)) {
-    throw new Error('Invalid period: must be a positive integer');
+    const error = new Error('Invalid period: must be a positive integer');
+    logger.error('ADX calculation validation failed', error);
+    throw error;
   }
 
   // Need enough data: period for initial smoothing + period for ADX smoothing

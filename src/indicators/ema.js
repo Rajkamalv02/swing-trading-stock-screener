@@ -11,6 +11,9 @@
  * For the first EMA value, we use SMA as the starting point.
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 /**
  * Calculate Exponential Moving Average
  * 
@@ -24,23 +27,35 @@
  * const ema = calculateEMA(prices, 3); // Returns: 106.5
  */
 function calculateEMA(prices, period, returnArray = false) {
+  const startTime = Date.now();
+  
   // Input validation
   if (!Array.isArray(prices)) {
-    throw new Error('Prices must be an array');
+    const error = new Error('Prices must be an array');
+    logger.error('EMA calculation validation failed', error);
+    throw error;
   }
 
   if (period <= 0 || !Number.isInteger(period)) {
-    throw new Error('Invalid period: must be a positive integer');
+    const error = new Error('Invalid period: must be a positive integer');
+    logger.error('EMA calculation validation failed', error);
+    throw error;
   }
 
   if (prices.length < period) {
-    throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`);
+    const error = new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`);
+    logger.error('EMA calculation validation failed', error);
+    throw error;
   }
 
   // Validate all prices are numbers
   if (!prices.every(price => typeof price === 'number' && !isNaN(price))) {
-    throw new Error('All prices must be numbers');
+    const error = new Error('All prices must be numbers');
+    logger.error('EMA calculation validation failed', error);
+    throw error;
   }
+
+  logger.debug('Calculating EMA', { period, dataPoints: prices.length });
 
   // Calculate multiplier (smoothing factor)
   const multiplier = 2 / (period + 1);
@@ -61,6 +76,14 @@ function calculateEMA(prices, period, returnArray = false) {
     
     emaValues.push(currentEMA);
   }
+  
+  const duration = Date.now() - startTime;
+  logger.debug('EMA calculation completed', {
+    period,
+    dataPoints: prices.length,
+    durationMs: duration,
+    resultSize: emaValues.length
+  });
   
   // Return based on returnArray parameter
   if (returnArray) {

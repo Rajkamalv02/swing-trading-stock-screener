@@ -18,7 +18,8 @@ async function runDemo() {
     const topStocks = ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS'];
     
     const result = await scanStocks(topStocks, {
-      days: 50,
+      interval: '1d',    // Use '1d' for daily, '1wk' for weekly, '1mo' for monthly
+      days: 250,         // Increased to 250 days to get enough data for EMA200
       minScore: 60,
       maxResults: 10
     });

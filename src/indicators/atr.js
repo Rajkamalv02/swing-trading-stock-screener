@@ -21,6 +21,9 @@
  * - High volatility: ATR > 5% of price
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 /**
  * Calculate True Range for a single period
  * 

@@ -13,6 +13,9 @@
  * Total: 0-100 points
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.SCORING);
+
 const {
   calculateEMA,
   calculateRSI,
@@ -21,6 +24,8 @@ const {
   calculateBollingerBands,
   calculateATR
 } = require('../indicators');
+
+logger.info('Scoring Engine module initialized', { version: '1.0.0' });
 
 /**
  * Score a stock based on complete OHLCV data
@@ -38,40 +43,145 @@ const {
  * console.log(score.totalScore); // 87.5
  */
 function scoreStock(data, options = {}) {
+  const startTime = Date.now();
+  
+  logger.debug('Stock scoring initiated', { dataPoints: data ? data.length : 0 });
+  
   // Input validation
   if (!Array.isArray(data)) {
-    throw new Error('Data must be an array');
+    const error = new Error('Data must be an array');
+    logger.error('Stock scoring validation failed', { reason: 'data not an array', type: typeof data });
+    throw error;
   }
 
   // Need at least 50 data points for reliable indicator calculation
   if (data.length < 50) {
-    throw new Error(`Insufficient data: need at least 50 data points, got ${data.length}`);
+    const error = new Error(`Insufficient data: need at least 50 data points, got ${data.length}`);
+    logger.error('Stock scoring validation failed', { reason: 'insufficient data points', provided: data.length, required: 50 });
+    throw error;
   }
 
   // Validate data structure
   for (let i = 0; i < data.length; i++) {
     const candle = data[i];
 
-    if (!candle.high || !candle.low || !candle.close || !candle.volume) {
-      throw new Error('Each data point must have high, low, close, and volume properties');
+    if (!candle || typeof candle !== 'object') {
+      const error = new Error(`Invalid data point at index ${i}: expected object, got ${typeof candle}`);
+      logger.error('Stock scoring validation failed', { reason: 'invalid data point structure', index: i, received: typeof candle });
+      throw error;
+    }
+
+    if (!candle.high || candle.high <= 0) {
+      const error = new Error(`Invalid high value at index ${i}: ${candle.high}`);
+      logger.error('Stock scoring validation failed', { reason: 'invalid high value', index: i, value: candle.high });
+      throw error;
+    }
+
+    if (!candle.low || candle.low <= 0) {
+      const error = new Error(`Invalid low value at index ${i}: ${candle.low}`);
+      logger.error('Stock scoring validation failed', { reason: 'invalid low value', index: i, value: candle.low });
+      throw error;
+    }
+
+    if (!candle.close || candle.close <= 0) {
+      const error = new Error(`Invalid close value at index ${i}: ${candle.close}`);
+      logger.error('Stock scoring validation failed', { reason: 'invalid close value', index: i, value: candle.close });
+      throw error;
+    }
+
+    if (!candle.volume || candle.volume < 0) {
+      const error = new Error(`Invalid volume at index ${i}: ${candle.volume}`);
+      logger.error('Stock scoring validation failed', { reason: 'invalid volume', index: i, value: candle.volume });
+      throw error;
+    }
+
+    if (candle.high < candle.low) {
+      const error = new Error(`Invalid candle at index ${i}: high (${candle.high}) < low (${candle.low})`);
+      logger.error('Stock scoring validation failed', { reason: 'high < low', index: i, high: candle.high, low: candle.low });
+      throw error;
+    }
+
+    if (candle.close < candle.low || candle.close > candle.high) {
+      const error = new Error(`Invalid close at index ${i}: close (${candle.close}) not between low and high`);
+      logger.error('Stock scoring validation failed', { reason: 'close outside range', index: i, close: candle.close, low: candle.low, high: candle.high });
+      throw error;
     }
   }
 
-  // Extract price arrays
-  const closes = data.map(d => d.close);
-  const volumes = data.map(d => d.volume);
+  logger.debug('Calculating indicators for scoring', { dataPoints: data.length });
 
-  // Calculate all indicators
-  const ema20 = calculateEMA(closes, 20);
-  const ema50 = calculateEMA(closes, 50);
-  const ema200 = calculateEMA(closes, 200);
+  try {
+    // Extract price arrays
+    const closes = data.map(d => d.close);
+    const volumes = data.map(d => d.volume);
 
-  const rsi14 = calculateRSI(closes, 14);
-  const macd = calculateMACD(closes, 12, 26, 9);
-  const adx = calculateADX(data, 14);
-  const bb = calculateBollingerBands(closes, 20, 2);
+    // Calculate all indicators with error handling
+    let ema20, ema50, ema200, rsi14, macd, adx, bb;
 
-  const currentPrice = closes[closes.length - 1];
+    try {
+      ema20 = calculateEMA(closes, 20);
+      logger.debug('EMA20 calculated', { value: ema20 });
+    } catch (error) {
+      logger.error('Failed to calculate EMA20', error);
+      throw new Error(`EMA20 calculation failed: ${error.message}`);
+    }
+
+    try {
+      ema50 = calculateEMA(closes, 50);
+      logger.debug('EMA50 calculated', { value: ema50 });
+    } catch (error) {
+      logger.error('Failed to calculate EMA50', error);
+      throw new Error(`EMA50 calculation failed: ${error.message}`);
+    }
+
+    try {
+      // EMA200 requires 200 data points. If we don't have enough data, use a shorter period
+      if (closes.length < 200) {
+        const fallbackPeriod = Math.min(closes.length - 1, 100);
+        logger.warn(`Insufficient data for EMA200 (${closes.length} < 200), using EMA${fallbackPeriod}`, { dataPoints: closes.length });
+        ema200 = calculateEMA(closes, fallbackPeriod);
+      } else {
+        ema200 = calculateEMA(closes, 200);
+      }
+      logger.debug('EMA200 calculated', { value: ema200 });
+    } catch (error) {
+      logger.error('Failed to calculate EMA200/fallback', error);
+      throw new Error(`EMA200 calculation failed: ${error.message}`);
+    }
+
+    try {
+      rsi14 = calculateRSI(closes, 14);
+      logger.debug('RSI14 calculated', { value: rsi14 });
+    } catch (error) {
+      logger.error('Failed to calculate RSI14', error);
+      throw new Error(`RSI14 calculation failed: ${error.message}`);
+    }
+
+    try {
+      macd = calculateMACD(closes, 12, 26, 9);
+      logger.debug('MACD calculated', { macdLine: macd.macdLine, signalLine: macd.signalLine });
+    } catch (error) {
+      logger.error('Failed to calculate MACD', error);
+      throw new Error(`MACD calculation failed: ${error.message}`);
+    }
+
+    try {
+      adx = calculateADX(data, 14);
+      logger.debug('ADX calculated', { value: adx.adx });
+    } catch (error) {
+      logger.error('Failed to calculate ADX', error);
+      throw new Error(`ADX calculation failed: ${error.message}`);
+    }
+
+    try {
+      bb = calculateBollingerBands(closes, 20, 2);
+      logger.debug('Bollinger Bands calculated', { upper: bb.upper, lower: bb.lower });
+    } catch (error) {
+      logger.error('Failed to calculate Bollinger Bands', error);
+      throw new Error(`Bollinger Bands calculation failed: ${error.message}`);
+    }
+
+    const currentPrice = closes[closes.length - 1];
 
   // ============================================
   // LAYER 2: TREND ALIGNMENT SCORING (0-17.5 points)
@@ -84,6 +194,7 @@ function scoreStock(data, options = {}) {
     ema200,
     macd
   });
+  logger.debug('Trend alignment scored', { trendScore });
 
   // ============================================
   // LAYER 3: SETUP PATTERN DETECTION (0-15 points)
@@ -99,6 +210,7 @@ function scoreStock(data, options = {}) {
     bb,
     volumes
   });
+  logger.debug('Setup pattern detected', { type: setupResult.type, score: setupResult.score });
 
   // ============================================
   // INDIVIDUAL INDICATOR SCORING
@@ -106,21 +218,26 @@ function scoreStock(data, options = {}) {
 
   // RSI Score (0-10 points)
   const rsiScore = calculateRSIScore(rsi14);
+  logger.debug('RSI scored', { rsiScore, rsi14 });
 
   // MACD Score (0-10 points)
   const macdScore = calculateMACDScore(macd);
+  logger.debug('MACD scored', { macdScore });
 
   // Volume Score (0-10 points)
   const volumeScore = calculateVolumeScore(volumes);
+  logger.debug('Volume scored', { volumeScore });
 
   // Bollinger Bands Score (0-7.5 points)
   const bollingerScore = calculateBollingerScore(bb, currentPrice);
+  logger.debug('Bollinger Bands scored', { bollingerScore });
 
   // ============================================
   // MARKET REGIME BONUS (0-15 points)
   // ============================================
 
   const marketRegimeScore = calculateMarketRegimeScore(adx, bb);
+  logger.debug('Market regime scored', { marketRegimeScore, adx: adx.adx });
 
   // ============================================
   // TOTAL SCORE CALCULATION
@@ -173,7 +290,7 @@ function scoreStock(data, options = {}) {
   });
 
   // Return complete scoring breakdown
-  return {
+  const result = {
     totalScore: parseFloat(totalScore.toFixed(2)),
     classification,
 
@@ -212,6 +329,21 @@ function scoreStock(data, options = {}) {
       }
     }
   };
+
+  const duration = Date.now() - startTime;
+  logger.info('Stock scoring completed successfully', { 
+    score: result.totalScore,
+    classification: result.classification,
+    setupType: result.setupType,
+    durationMs: duration
+  });
+
+  return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('Stock scoring failed', error);
+    throw error;
+  }
 }
 
 /**

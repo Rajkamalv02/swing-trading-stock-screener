@@ -22,6 +22,9 @@
  * - Band walk: Price hugging upper/lower band = strong trend
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 const { calculateSMA } = require('./ema');
 
 /**

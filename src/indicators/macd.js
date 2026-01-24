@@ -18,6 +18,9 @@
  * - MACD crosses below 0: Bearish trend
  */
 
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 const { calculateEMA } = require('./ema');
 
 /**
@@ -36,17 +39,27 @@ const { calculateEMA } = require('./ema');
  * console.log(macd); // { macdLine: 2.5, signalLine: 1.8, histogram: 0.7 }
  */
 function calculateMACD(prices, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9, returnArray = false) {
+  const startTime = Date.now();
+  
+  logger.debug('Calculating MACD', { fastPeriod, slowPeriod, signalPeriod, dataPoints: prices.length });
+  
   // Input validation
   if (!Array.isArray(prices)) {
-    throw new Error('Prices must be an array');
+    const error = new Error('Prices must be an array');
+    logger.error('MACD calculation validation failed', error);
+    throw error;
   }
 
   if (fastPeriod <= 0 || slowPeriod <= 0 || signalPeriod <= 0) {
-    throw new Error('Invalid period: all periods must be positive integers');
+    const error = new Error('Invalid period: all periods must be positive integers');
+    logger.error('MACD calculation validation failed', error);
+    throw error;
   }
 
   if (!Number.isInteger(fastPeriod) || !Number.isInteger(slowPeriod) || !Number.isInteger(signalPeriod)) {
-    throw new Error('Invalid period: all periods must be integers');
+    const error = new Error('Invalid period: all periods must be integers');
+    logger.error('MACD calculation validation failed', error);
+    throw error;
   }
 
   if (fastPeriod >= slowPeriod) {

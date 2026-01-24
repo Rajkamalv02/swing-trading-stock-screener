@@ -1,3 +1,6 @@
+const { getLogger, LOG_CATEGORIES } = require('../utils');
+const logger = getLogger(LOG_CATEGORIES.INDICATORS);
+
 const { calculateEMA, calculateSMA } = require('./ema');
 const { calculateRSI, interpretRSI, checkRSIDivergence } = require('./rsi');
 const { 
@@ -25,6 +28,10 @@ const {
   isTrendTradeable,
   detectDICrossover
 } = require('./adx');
+
+logger.debug('Indicators module initialized', { 
+  indicators: ['EMA', 'SMA', 'RSI', 'MACD', 'ATR', 'ADX', 'Bollinger Bands']
+});
 
 module.exports = {
   // Moving Averages
