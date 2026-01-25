@@ -21,5 +21,9 @@
     "defaultMs": 30000,
     "fetchStockDataMs": 15000,
     "fetchMarketDataMs": 10000
+  },
+  "scanner": {
+    "timeoutMs": 30000,
+    "batchFetchLimit": 5
   }
 }
