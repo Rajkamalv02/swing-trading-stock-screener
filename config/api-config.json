@@ -1,0 +1,25 @@
+{
+  "rateLimit": {
+    "requestsPerSecond": 5,
+    "burstSize": 10
+  },
+  "retry": {
+    "maxAttempts": 3,
+    "initialDelayMs": 1000,
+    "maxDelayMs": 10000,
+    "backoffMultiplier": 2
+  },
+  "circuitBreaker": {
+    "failureThreshold": 5,
+    "cooldownMs": 60000
+  },
+  "cache": {
+    "historicalTTL": 3600,
+    "currentDataTTL": 300
+  },
+  "timeout": {
+    "defaultMs": 30000,
+    "fetchStockDataMs": 15000,
+    "fetchMarketDataMs": 10000
+  }
+}

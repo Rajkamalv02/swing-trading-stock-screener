@@ -2,9 +2,18 @@
  * Utils Module - Utility functions and helpers
  */
 
-const { getLogger, LOG_LEVELS, LOG_DIR, ensureLogDirectory, getDateString, getTimestamp } = require('./logger');
-const LOG_CATEGORIES = require('./log-categories');
-const validators = require('./validators');
+const {
+  getLogger,
+  LOG_LEVELS,
+  LOG_DIR,
+  ensureLogDirectory,
+  getDateString,
+  getTimestamp,
+} = require("./logger");
+const LOG_CATEGORIES = require("./log-categories");
+const validators = require("./validators");
+const configLoader = require("./config-loader");
+const rateLimiter = require("./rate-limiter");
 
 module.exports = {
   // Logger
@@ -15,7 +24,15 @@ module.exports = {
   getDateString,
   getTimestamp,
   LOG_CATEGORIES,
-  
+
   // Validators
-  validators
+  validators,
+
+  // Configuration
+  configLoader,
+
+  // Rate Limiting
+  RateLimiter: rateLimiter.RateLimiter,
+  CircuitBreaker: rateLimiter.CircuitBreaker,
+  retryWithBackoff: rateLimiter.retryWithBackoff,
 };
